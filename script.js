@@ -1,237 +1,155 @@
+const board = document.getElementById("board");
+const cells = document.querySelectorAll(".cell");
+const statusText = document.getElementById("status");
+const restartBtn = document.getElementById("restartButton");
+const toggleBtn = document.getElementById("darkModeToggle");
 
-/*Code of Minmax here*/
+let currentPlayer = "X";
+let gameActive = true;
+let boardState = ["", "", "", "", "", "", "", "", ""];
 
-var board = [
-	[0, 0, 0],
-	[0, 0, 0],
-	[0, 0, 0],
+const winningConditions = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6]
 ];
 
-var HUMAN = -1;
-var COMP = +1;
+const minimax = (newBoard, player) => {
+  const huPlayer = "X";
+  const aiPlayer = "O";
+  const availSpots = newBoard.reduce((acc, val, i) => {
+    if (val === "") acc.push(i);
+    return acc;
+  }, []);
 
-/* Function to heuristic evaluation of state. */
-function evalute(state) {
-	var score = 0;
+  if (checkWinner(newBoard, huPlayer)) {
+    return { score: -10 };
+  } else if (checkWinner(newBoard, aiPlayer)) {
+    return { score: 10 };
+  } else if (availSpots.length === 0) {
+    return { score: 0 };
+  }
 
-	if (gameOver(state, COMP)) {
-		score = +1;
-	}
-	else if (gameOver(state, HUMAN)) {
-		score = -1;
-	} else {
-		score = 0;
-	}
+  const moves = [];
 
-	return score;
-}
+  for (let i = 0; i < availSpots.length; i++) {
+    const move = {};
+    move.index = availSpots[i];
+    newBoard[availSpots[i]] = player;
 
-/* This function tests if a specific player wins */
-function gameOver(state, player) {
-	var win_state = [
-		[state[0][0], state[0][1], state[0][2]],
-		[state[1][0], state[1][1], state[1][2]],
-		[state[2][0], state[2][1], state[2][2]],
-		[state[0][0], state[1][0], state[2][0]],
-		[state[0][1], state[1][1], state[2][1]],
-		[state[0][2], state[1][2], state[2][2]],
-		[state[0][0], state[1][1], state[2][2]],
-		[state[2][0], state[1][1], state[0][2]],
-	];
+    if (player === aiPlayer) {
+      const result = minimax(newBoard, huPlayer);
+      move.score = result.score;
+    } else {
+      const result = minimax(newBoard, aiPlayer);
+      move.score = result.score;
+    }
 
-	for (var i = 0; i < 8; i++) {
-		var line = win_state[i];
-		var filled = 0;
-		for (var j = 0; j < 3; j++) {
-			if (line[j] == player)
-				filled++;
-		}
-		if (filled == 3)
-			return true;
-	}
-	return false;
-}
+    newBoard[availSpots[i]] = "";
+    moves.push(move);
+  }
 
-/* This function test if the human or computer wins */
-function gameOverAll(state) {
-	return gameOver(state, HUMAN) || gameOver(state, COMP);
-}
+  let bestMove;
+  if (player === aiPlayer) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score > bestScore) {
+        bestScore = moves[i].score;
+        bestMove = i;
+      }
+    }
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score < bestScore) {
+        bestScore = moves[i].score;
+        bestMove = i;
+      }
+    }
+  }
 
-function emptyCells(state) {
-	var cells = [];
-	for (var x = 0; x < 3; x++) {
-		for (var y = 0; y < 3; y++) {
-			if (state[x][y] == 0)
-				cells.push([x, y]);
-		}
-	}
+  return moves[bestMove];
+};
 
-	return cells;
-}
+const checkWinner = (boardToCheck, player) => {
+  return winningConditions.some(condition =>
+    condition.every(index => boardToCheck[index] === player)
+  );
+};
 
-/* A move is valid if the chosen cell is empty */
-function validMove(x, y) {
-	var empties = emptyCells(board);
-	try {
-		if (board[x][y] == 0) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	} catch (e) {
-		return false;
-	}
-}
+const handleClick = (e) => {
+  const index = e.target.dataset.index;
+  if (boardState[index] !== "" || !gameActive) return;
 
-/* Set the move on board, if the coordinates are valid */
-function setMove(x, y, player) {
-	if (validMove(x, y)) {
-		board[x][y] = player;
-		return true;
-	}
-	else {
-		return false;
-	}
-}
+  boardState[index] = currentPlayer;
+  e.target.textContent = currentPlayer;
 
-/* *** AI function that choice the best move *** */
-// Read more on https://github.com/Cledersonbc/tic-tac-toe-minimax/
-function minimax(state, depth, player) {
-	var best;
+  if (checkWinner(boardState, currentPlayer)) {
+    statusText.textContent = `Player ${currentPlayer} wins!`;
+    gameActive = false;
+    return;
+  }
 
-	if (player == COMP) {
-		best = [-1, -1, -1000];
-	}
-	else {
-		best = [-1, -1, +1000];
-	}
+  if (!boardState.includes("")) {
+    statusText.textContent = "It's a draw!";
+    gameActive = false;
+    return;
+  }
 
-	if (depth == 0 || gameOverAll(state)) {
-		var score = evalute(state);
-		return [-1, -1, score];
-	}
+  currentPlayer = "O";
 
-	emptyCells(state).forEach(function (cell) {
-		var x = cell[0];
-		var y = cell[1];
-		state[x][y] = player;
-		var score = minimax(state, depth - 1, -player);
-		state[x][y] = 0;
-		score[0] = x;
-		score[1] = y;
+  const bestMove = minimax([...boardState], "O").index;
+  boardState[bestMove] = "O";
+  cells[bestMove].textContent = "O";
 
-		if (player == COMP) {
-			if (score[2] > best[2])
-				best = score;
-		}
-		else {
-			if (score[2] < best[2])
-				best = score;
-		}
-	});
+  if (checkWinner(boardState, "O")) {
+    statusText.textContent = `AI wins!`;
+    gameActive = false;
+    return;
+  }
 
-	return best;
-}
+  if (!boardState.includes("")) {
+    statusText.textContent = "It's a draw!";
+    gameActive = false;
+    return;
+  }
 
-/* It calls the minimax function */
-function aiTurn() {
-	var x, y;
-	var move;
-	var cell;
+  currentPlayer = "X";
+};
 
-	if (emptyCells(board).length == 9) {
-		x = parseInt(Math.random() * 3);
-		y = parseInt(Math.random() * 3);
-	}
-	else {
-		move = minimax(board, emptyCells(board).length, COMP);
-		x = move[0];
-		y = move[1];
-	}
+const restartGame = () => {
+  boardState = ["", "", "", "", "", "", "", "", ""];
+  cells.forEach(cell => cell.textContent = "");
+  currentPlayer = "X";
+  gameActive = true;
+  statusText.textContent = "";
+};
 
-	if (setMove(x, y, COMP)) {
-		cell = document.getElementById(String(x) + String(y));
-		cell.innerHTML = "O";
-	}
-}
+cells.forEach(cell => cell.addEventListener("click", handleClick));
+restartBtn.addEventListener("click", restartGame);
 
-/* main */
-function clickedCell(cell) {
-	var button = document.getElementById("bnt-restart");
-	button.disabled = true;
-	var conditionToContinue = gameOverAll(board) == false && emptyCells(board).length > 0;
+// 🌙 DARK MODE TOGGLE
+toggleBtn.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
 
-	if (conditionToContinue == true) {
-		var x = cell.id.split("")[0];
-		var y = cell.id.split("")[1];
-		var move = setMove(x, y, HUMAN);
-		if (move == true) {
-			cell.innerHTML = "X";
-			if (conditionToContinue)
-				aiTurn();
-		}
-	}
-	if (gameOver(board, COMP)) {
-		var lines;
-		var cell;
-		var msg;
+  const isDark = document.body.classList.contains("dark-mode");
+  localStorage.setItem("theme", isDark ? "dark" : "light");
 
-		if (board[0][0] == 1 && board[0][1] == 1 && board[0][2] == 1)
-			lines = [[0, 0], [0, 1], [0, 2]];
-		else if (board[1][0] == 1 && board[1][1] == 1 && board[1][2] == 1)
-			lines = [[1, 0], [1, 1], [1, 2]];
-		else if (board[2][0] == 1 && board[2][1] == 1 && board[2][2] == 1)
-			lines = [[2, 0], [2, 1], [2, 2]];
-		else if (board[0][0] == 1 && board[1][0] == 1 && board[2][0] == 1)
-			lines = [[0, 0], [1, 0], [2, 0]];
-		else if (board[0][1] == 1 && board[1][1] == 1 && board[2][1] == 1)
-			lines = [[0, 1], [1, 1], [2, 1]];
-		else if (board[0][2] == 1 && board[1][2] == 1 && board[2][2] == 1)
-			lines = [[0, 2], [1, 2], [2, 2]];
-		else if (board[0][0] == 1 && board[1][1] == 1 && board[2][2] == 1)
-			lines = [[0, 0], [1, 1], [2, 2]];
-		else if (board[2][0] == 1 && board[1][1] == 1 && board[0][2] == 1)
-			lines = [[2, 0], [1, 1], [0, 2]];
+  toggleBtn.textContent = isDark ? "🌞" : "🌙";
+});
 
-		for (var i = 0; i < lines.length; i++) {
-			cell = document.getElementById(String(lines[i][0]) + String(lines[i][1]));
-			cell.style.color = "red";
-		}
-
-		msg = document.getElementById("message");
-		msg.innerHTML = "You lose!";
-	}
-	if (emptyCells(board).length == 0 && !gameOverAll(board)) {
-		var msg = document.getElementById("message");
-		msg.innerHTML = "Draw!";
-	}
-	if (gameOverAll(board) == true || emptyCells(board).length == 0) {
-		button.value = "Restart";
-		button.disabled = false;
-	}
-}
-
-/* Restart the game*/
-function restartBnt(button) {
-	if (button.value == "Start AI") {
-		aiTurn();
-		button.disabled = true;
-	}
-	else if (button.value == "Restart") {
-		var htmlBoard;
-		var msg;
-
-		for (var x = 0; x < 3; x++) {
-			for (var y = 0; y < 3; y++) {
-				board[x][y] = 0;
-				htmlBoard = document.getElementById(String(x) + String(y));
-				htmlBoard.style.color = "#444";
-				htmlBoard.innerHTML = "";
-			}
-		}
-		button.value = "Start AI";
-		msg = document.getElementById("message");
-		msg.innerHTML = "";
-	}
-}
+// Load saved theme on page load
+window.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark-mode");
+    toggleBtn.textContent = "🌞";
+  } else {
+    toggleBtn.textContent = "🌙";
+  }
+});
