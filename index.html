@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Unbeatable Tic Tac Toe</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<header>
+		<h1>Tic Tac Toe - Unbeatable AI</h1>
+	</header>
+
+	<table id="tab-tic-tac-toe">
+		<tr>
+			<td id="00" onclick="clickedCell(this)"></td>
+			<td id="01" onclick="clickedCell(this)"></td>
+			<td id="02" onclick="clickedCell(this)"></td>
+		</tr>
+		<tr>
+			<td id="10" onclick="clickedCell(this)"></td>
+			<td id="11" onclick="clickedCell(this)"></td>
+			<td id="12" onclick="clickedCell(this)"></td>
+		</tr>
+		<tr>
+			<td id="20" onclick="clickedCell(this)"></td>
+			<td id="21" onclick="clickedCell(this)"></td>
+			<td id="22" onclick="clickedCell(this)"></td>
+		</tr>
+	</table>
+
+	<p id="message"></p>
+
+	<input id="bnt-restart" type="button" value="Start AI" onclick="restartBnt(this)">
+
+	<script src="script.js"></script>
+</body>
+</html>
