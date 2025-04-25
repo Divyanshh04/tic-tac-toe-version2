@@ -1,37 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Unbeatable Tic Tac Toe</title>
-	<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unbeatable Tic Tac Toe</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-	<header>
-		<h1>Tic Tac Toe - Unbeatable AI</h1>
-	</header>
+  <div class="header">
+    <h1>Tic Tac Toe vs Unbeatable AI</h1>
+    <button id="darkModeToggle">🌙</button>
+  </div>
 
-	<table id="tab-tic-tac-toe">
-		<tr>
-			<td id="00" onclick="clickedCell(this)"></td>
-			<td id="01" onclick="clickedCell(this)"></td>
-			<td id="02" onclick="clickedCell(this)"></td>
-		</tr>
-		<tr>
-			<td id="10" onclick="clickedCell(this)"></td>
-			<td id="11" onclick="clickedCell(this)"></td>
-			<td id="12" onclick="clickedCell(this)"></td>
-		</tr>
-		<tr>
-			<td id="20" onclick="clickedCell(this)"></td>
-			<td id="21" onclick="clickedCell(this)"></td>
-			<td id="22" onclick="clickedCell(this)"></td>
-		</tr>
-	</table>
+  <div class="board" id="board">
+    <div class="cell" data-index="0"></div>
+    <div class="cell" data-index="1"></div>
+    <div class="cell" data-index="2"></div>
+    <div class="cell" data-index="3"></div>
+    <div class="cell" data-index="4"></div>
+    <div class="cell" data-index="5"></div>
+    <div class="cell" data-index="6"></div>
+    <div class="cell" data-index="7"></div>
+    <div class="cell" data-index="8"></div>
+  </div>
 
-	<p id="message"></p>
+  <p id="status"></p>
+  <button id="restartButton">Restart Game</button>
 
-	<input id="bnt-restart" type="button" value="Start AI" onclick="restartBnt(this)">
-
-	<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
